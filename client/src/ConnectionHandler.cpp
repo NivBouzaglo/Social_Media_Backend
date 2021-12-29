@@ -2,7 +2,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <iostream>
 #include <sstream>
-
+#include <vector>
 using boost::asio::ip::tcp;
 
 using std::cin;
@@ -10,7 +10,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
-
+using namespace std;
 ConnectionHandler::ConnectionHandler(string host, short port) : host_(host), port_(port), io_service_(),
                                                                 socket_(io_service_), terminate(0) {}
 
@@ -103,20 +103,43 @@ bool ConnectionHandler::sendFrameAscii(const std::string &frame, char delimiter)
     /*bool result=sendBytes(frame.c_str(),frame.length());
     if(!result) return false;
     return sendBytes(&delimiter,1);*/
-    vector<char> output = encode(frame);
+    std:: vector<char> output = encode(frame);
 }
 
 std::vector<char> ConnectionHandler::encode(std::string msg) {
-    vector<char> output;
+    std::vector<char> output;
     std::istringstream iss(msg);
     std::string word;
     char opcode[2];
-    int i = 0;
+    int i =2 ;
     getline(iss, word, ' ')
     switch (word) {
         case "REGISTER":
-
+            shortToBytes((short)1 , opcode);
+            output.push_back(opcode[0])
+            output.push_back(opcode[1])
+            while (getline(iss, part, ' '))
+            {
+                    for (int k = i; k < part.length(); k++) {
+                        charVector.push_back(part[k]);
+                        i++;
+                    }
+                    charVector.push_back('\0');
+                    i++;
+            }
         case "LOGIN":
+            shortToBytes((short)2 , opcode);
+            output.push_back(opcode[0])
+            output.push_back(opcode[1])
+            while (getline(iss, part, ' '))
+            {
+                for (int k = i; k < part.length(); k++) {
+                    charVector.push_back(part[k]);
+                    i++;
+                }
+                charVector.push_back('\0');
+                i++;
+            }
         case "LOGOUT":
         case "FOLLOW":
         case "POST":
