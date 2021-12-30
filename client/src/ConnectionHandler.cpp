@@ -119,25 +119,25 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
     std::istringstream iss(msg);
     std::string word;
     char opcode[2];
-    int i = 2;
+    int i = 0;
     getline(iss, word, ' ')
     switch (word) {
         case "REGISTER":
             shortToBytes((short) 1, opcode);
             output.push_back(opcode[0]);
             output.push_back(opcode[1]);
-            while (getline(iss, word, ' ')) {
+            while (getline(iss, word, ' ') && i < 3) {
                 for (int k = 0; k < word.length(); k++) {
                     output.push_back(word[k]);
                 }
                 output.push_back('\0');
+                i++;
             }
         case "LOGIN":
             shortToBytes((short) 2, opcode);
             output.push_back(opcode[0]);
             output.push_back(opcode[1]);
-            int i = 0;
-            while (getline(iss, word, ' ')) {
+            while (getline(iss, word, ' ') && i < 3) {
                 if (i != 2) {
                     for (int k = 0; k < word.length(); k++) {
                         output.push_back(word[k]);
@@ -146,7 +146,9 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
                 }
                 else{
                     if (word == "1")
-
+                        output.push_back('\1');
+                    else if (word == "0")
+                        output.push_back('\0');
                 }
                 i++;
             }
