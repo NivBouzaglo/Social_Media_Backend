@@ -192,6 +192,12 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
             for (int j = 0; j < word.length; ++j) {
                 output.push_back(word[j]);
             }
+            std::time_t t = std::time(0);   // get time now
+            std::tm* now = std::localtime(&t);
+            char time[];
+            shortToBytes((short)now, time);
+            for(int i=0; i<time.length(); i++)
+                output.push_back(time[i]);s
             output.push_back('\0');
         case "LOGSTAT":
             shortToBytes((short)7, opcode);
