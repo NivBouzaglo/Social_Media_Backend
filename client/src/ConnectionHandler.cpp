@@ -98,9 +98,23 @@ bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
                 frame.append("NOTIFICATION ");
                 getBytes(&ch,1);
                 if (ch == '\1')
-                    frame.append("Public");
+                    frame.append("Public ");
                 else
-                    frame.append("Pm");
+                    frame.append("Pm ");
+                while (true){
+                    getBytes(&ch , 1);
+                    if (ch == '\0')
+                        break;
+                    frame.append(ch);
+                }
+                frame.append(" ");
+                while (true){
+                    getBytes(&ch , 1);
+                    if (ch == '\0')
+                        break;
+                    frame.append(ch);
+                }
+                return true
             case 10:
             case 11:
                 char error[2];
@@ -212,7 +226,7 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
             char time[];
             shortToBytes((short)now, time);
             for(int i=0; i<time.length(); i++)
-                output.push_back(time[i]);s
+                output.push_back(time[i]);
             output.push_back('\0');
             //time
         case "LOGSTAT":
