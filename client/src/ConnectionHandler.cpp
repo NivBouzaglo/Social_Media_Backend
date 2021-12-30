@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+
 using boost::asio::ip::tcp;
 
 using std::cin;
@@ -11,6 +12,7 @@ using std::cerr;
 using std::endl;
 using std::string;
 using namespace std;
+
 ConnectionHandler::ConnectionHandler(string host, short port) : host_(host), port_(port), io_service_(),
                                                                 socket_(io_service_), terminate(0) {}
 
@@ -103,13 +105,13 @@ bool ConnectionHandler::sendFrameAscii(const std::string &frame, char delimiter)
     /*bool result=sendBytes(frame.c_str(),frame.length());
     if(!result) return false;
     return sendBytes(&delimiter,1);*/
-    std:: vector<char> output = encode(frame);
-    int size =output.size();
+    std::vector<char> output = encode(frame);
+    int size = output.size();
     char send[size];
     for (int i = 0; i < size; ++i) {
         send[i] = output[i];
     }
-    return sendBytes(send , size);
+    return sendBytes(send, size);
 }
 
 std::vector<char> ConnectionHandler::encode(std::string msg) {
@@ -117,41 +119,47 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
     std::istringstream iss(msg);
     std::string word;
     char opcode[2];
-    int i =2 ;
+    int i = 2;
     getline(iss, word, ' ')
     switch (word) {
         case "REGISTER":
-            shortToBytes((short)1 , opcode);
+            shortToBytes((short) 1, opcode);
             output.push_back(opcode[0]);
             output.push_back(opcode[1]);
-            while (getline(iss, word, ' '))
-            {
-                    for (int k = 0; k < word.length(); k++) {
-                        charVector.push_back(word[k]);
-                    }
-                    charVector.push_back('\0');
+            while (getline(iss, word, ' ')) {
+                for (int k = 0; k < word.length(); k++) {
+                    output.push_back(word[k]);
+                }
+                output.push_back('\0');
             }
         case "LOGIN":
-            shortToBytes((short)2 , opcode);
+            shortToBytes((short) 2, opcode);
             output.push_back(opcode[0]);
             output.push_back(opcode[1]);
-            while (getline(iss, word, ' '))
-            {
-                for (int k = 0; k < word.length(); k++) {
-                    charVector.push_back(word[k]);
+            int i = 0;
+            while (getline(iss, word, ' ')) {
+                if (i != 2) {
+                    for (int k = 0; k < word.length(); k++) {
+                        output.push_back(word[k]);
+                    }
+                    output.push_back('\0');
                 }
-                charVector.push_back('\0');
+                else{
+                    if (word == "1")
+
+                }
+                i++;
             }
         case "LOGOUT":
-            shortToBytes((short)3 , opcode);
+            shortToBytes((short) 3, opcode);
             output.push_back(opcode[0]);
             output.push_back(opcode[1]);
         case "FOLLOW":
-            shortToBytes((short)4 , opcode);
+            shortToBytes((short) 4, opcode);
             output.push_back(opcode[0]);
             output.push_back(opcode[1]);
             getline(iss, word, ' ');
-            if(word == "1")
+            if (word == "1")
                 output.push_back('\1');
             else
                 output.push_back('\0');
@@ -168,8 +176,8 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
     output.push_back(';');
     return output;
 }
-void shortToBytes(short num, char* bytesArr)
-{
+
+void shortToBytes(short num, char *bytesArr) {
     bytesArr[0] = ((num >> 8) & 0xFF);
     bytesArr[1] = (num & 0xFF);
 }
