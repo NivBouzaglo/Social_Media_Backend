@@ -103,14 +103,7 @@ bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
                     frame.append("Pm ");
                 while (true){
                     getBytes(&ch , 1);
-                    if (ch == '\0')
-                        break;
-                    frame.append(ch);
-                }
-                frame.append(" ");
-                while (true){
-                    getBytes(&ch , 1);
-                    if (ch == '\0')
+                    if (ch == ';')
                         break;
                     frame.append(ch);
                 }
