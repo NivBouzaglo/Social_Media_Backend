@@ -114,15 +114,14 @@ bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
                         break;
                     frame.append(ch);
                 }
-                return true
             case 10:
-                frame.append("Ack ");
+                frame.append("ACK ");
                 char messageOpcode[2];
                 getBytes(&messageOpcode, 2);
                 frame.append(std::to_string(messageOpcode));
                 switch (messageOpcode) {
                     case 3:
-                        terminate=true;
+                        terminate = 1;
                     case 4:
                         char letter;
                         getBytes(&letter,1);
@@ -157,21 +156,20 @@ bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
                         getBytes(&NumFollowing, 2);
                         frame.append(std::to_string(NumFollowing));
                 }
-                return true;
             case 11:
                 char error[2];
                 getBytes(&error , 2);
                 short mistake = bytesToShort(error);
-                frame.append("ERROR" + std::to_string(mistake));
+                frame.append("ERROR " + std::to_string(mistake));
                 if (mistake == 3)
                     terminate = -1;
-                return true;
         }
+        return true;
     } catch (std::exception &e) {
         std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
         return false;
     }
-    return true;
+    return false;
 }
 
 bool ConnectionHandler::sendFrameAscii(const std::string &frame, char delimiter) {
@@ -248,7 +246,6 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
                     output.push_back(word[j]);
                 }
             }
-            output.push_back('\0');
         case "PM":
             shortToBytes((short)6, opcode);
             output.push_back(opcode[0]);
@@ -269,7 +266,6 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
             shortToBytes((short)now, time);
             for(int i=0; i<time.length(); i++)
                 output.push_back(time[i]);
-            output.push_back('\0');
             //time
         case "LOGSTAT":
             shortToBytes((short)7, opcode);
@@ -283,7 +279,6 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
             for (int j = 0; j < word.length; ++j) {
                 output.push_back(word[j]);
             }
-            output.push_back('\0');
         case "BLOCK":
             shortToBytes((short)12, opcode);
             output.push_back(opcode[0]);
@@ -292,7 +287,6 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
             for (int j = 0; j < word.length; ++j) {
                 output.push_back(word[j]);
             }
-            output.push_back('\0');
     }
     output.push_back(';');
     return output;
