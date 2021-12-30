@@ -102,6 +102,48 @@ bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
                 else
                     frame.append("Pm");
             case 10:
+                frame.append("Ack ");
+                char messageOpcode[2];
+                getBytes(&messageOpcode, 2);
+                frame.append(std::to_string(messageOpcode));
+                switch (messageOpcode) {
+                    case 3:
+                        terminate=true;
+                    case 4:
+                        char letter;
+                        getBytes(&letter,1);
+                        while (letter!='\0'){
+                            frame.append(letter);
+                            getBytes(&letter,1);
+                        }
+                    case 7:
+                        char age[2];
+                        getBytes(&age, 2);
+                        frame.append(std::to_string(age));
+                        char NumPosts[2];
+                        getBytes(&NumPosts, 2);
+                        frame.append(std::to_string(NumPosts));
+                        char NumFollowers[2];
+                        getBytes(&NumFollowers, 2);
+                        frame.append(std::to_string(NumFollowers));
+                        char NumFollowing[2];
+                        getBytes(&NumFollowing, 2);
+                        frame.append(std::to_string(NumFollowing));
+                    case 8:
+                        char age[2];
+                        getBytes(&age, 2);
+                        frame.append(std::to_string(age));
+                        char NumPosts[2];
+                        getBytes(&NumPosts, 2);
+                        frame.append(std::to_string(NumPosts));
+                        char NumFollowers[2];
+                        getBytes(&NumFollowers, 2);
+                        frame.append(std::to_string(NumFollowers));
+                        char NumFollowing[2];
+                        getBytes(&NumFollowing, 2);
+                        frame.append(std::to_string(NumFollowing));
+                }
+                return true;
             case 11:
                 char error[2];
                 getBytes(&error , 2);

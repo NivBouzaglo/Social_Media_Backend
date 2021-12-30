@@ -1,4 +1,4 @@
-"C:\Program Files\JetBrains\CLion 2021.2.3\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEPENDS_USE_COMPILER=FALSE -G "CodeBlocks - NMake Makefiles" C:\Users\nivbo\CLionProjects\client\client
+"C:\Program Files\JetBrains\CLion 2021.3.1\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=C:/Program Files/JetBrains/CLion 2021.3.1/bin/ninja/win/ninja.exe" -G Ninja C:\Users\bar\CLionProjects\client\client
 CMake Error at CMakeLists.txt:1 (make_minimum_required):
   Unknown CMake command "make_minimum_required".
 
@@ -6,7 +6,7 @@ CMake Error at CMakeLists.txt:1 (make_minimum_required):
 CMake Warning (dev) in CMakeLists.txt:
   No cmake_minimum_required command is present.  A line of code such as
 
-    cmake_minimum_required(VERSION 3.20)
+    cmake_minimum_required(VERSION 3.21)
 
   should be added at the top of the file.  The version specified may be lower
   if you wish to support older CMake versions for this project.  For more
@@ -14,4 +14,4 @@ CMake Warning (dev) in CMakeLists.txt:
 This warning is for project developers.  Use -Wno-dev to suppress it.
 
 -- Configuring incomplete, errors occurred!
-See also "C:/Users/nivbo/ClionProjects/client/client/cmake-build-debug/CMakeFiles/CMakeOutput.log".
+See also "C:/Users/bar/CLionProjects/client/client/cmake-build-debug/CMakeFiles/CMakeOutput.log".
