@@ -1,9 +1,25 @@
-make_minimum_required(VERSION 3.20)
-project(spl3)
+cmake_minimum_required(VERSION 3.20.0)
+project(client)
+set(BOOST_ROOT "/path_to_boost_1_57_0")
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+SET(PLATFORM_SPECIFIC_LIBS "-lpthread")
 
-set(CMAKE_CXX_STANDARD 14)
+find_package(Boost 1.57.0 COMPONENTS filesystem regex)
 
-AUX_SOURCE_DIRECTORY(include INCLUDE)
-AUX_SOURCE_DIRECTORY(src SRC)
-
-add_executable(spl3 ${SRC} ${INCLUDE})
+if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    add_executable(client
+            include/connectionHandler.h
+            src/connectionHandler.cpp
+            src/echoClient.cpp
+            makefile src/readFromServer.cpp src/keyboardInput.cpp)
+    target_link_libraries(Boost_Echo_Client ${Boost_LIBRARIES})
+endif()
+set(CMAKE_CXX_STANDARD 11)
+target_compile_features(echoClient PUBLIC cxx_std_11)
+include_directories(.)
+include_directories(include)
+include_directories(src)
+target_link_libraries(client -lpthread)

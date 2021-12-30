@@ -104,6 +104,12 @@ bool ConnectionHandler::sendFrameAscii(const std::string &frame, char delimiter)
     if(!result) return false;
     return sendBytes(&delimiter,1);*/
     std:: vector<char> output = encode(frame);
+    int size =output.size();
+    char send[size];
+    for (int i = 0; i < size; ++i) {
+        send[i] = output[i];
+    }
+    return sendBytes(send , size);
 }
 
 std::vector<char> ConnectionHandler::encode(std::string msg) {
@@ -116,38 +122,51 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
     switch (word) {
         case "REGISTER":
             shortToBytes((short)1 , opcode);
-            output.push_back(opcode[0])
-            output.push_back(opcode[1])
-            while (getline(iss, part, ' '))
+            output.push_back(opcode[0]);
+            output.push_back(opcode[1]);
+            while (getline(iss, word, ' '))
             {
-                    for (int k = i; k < part.length(); k++) {
-                        charVector.push_back(part[k]);
-                        i++;
+                    for (int k = 0; k < word.length(); k++) {
+                        charVector.push_back(word[k]);
                     }
                     charVector.push_back('\0');
-                    i++;
             }
         case "LOGIN":
             shortToBytes((short)2 , opcode);
-            output.push_back(opcode[0])
-            output.push_back(opcode[1])
-            while (getline(iss, part, ' '))
+            output.push_back(opcode[0]);
+            output.push_back(opcode[1]);
+            while (getline(iss, word, ' '))
             {
-                for (int k = i; k < part.length(); k++) {
-                    charVector.push_back(part[k]);
-                    i++;
+                for (int k = 0; k < word.length(); k++) {
+                    charVector.push_back(word[k]);
                 }
                 charVector.push_back('\0');
-                i++;
             }
         case "LOGOUT":
+            shortToBytes((short)3 , opcode);
+            output.push_back(opcode[0]);
+            output.push_back(opcode[1]);
         case "FOLLOW":
+            shortToBytes((short)4 , opcode);
+            output.push_back(opcode[0]);
+            output.push_back(opcode[1]);
+            getline(iss, word, ' ');
+            if(word == "1")
+                output.push_back('\1');
+            else
+                output.push_back('\0');
+            getline(iss, word, ' ');
+            for (int j = 0; j < word.length; ++j) {
+                output.push_back(word[j]);
+            }
         case "POST":
         case "PM":
         case "LOGSTAT":
         case "STAT":
         case "BLOCK":
     }
+    output.push_back(';');
+    return output;
 }
 void shortToBytes(short num, char* bytesArr)
 {
