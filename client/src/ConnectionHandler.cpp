@@ -87,13 +87,30 @@ bool ConnectionHandler::sendLine(std::string &line) {
 
 bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
     char ch;
+    char opcodeBytes[2];
     // Stop when we encounter the null character. 
     // Notice that the null character is not appended to the frame string.
     try {
-        do {
-            getBytes(&ch, 1);
-            frame.append(1, ch);
-        } while (delimiter != ch);
+        getBytes(&opcodeBytes , 2);
+        short opcode = bytesToShort(opcodeBytes);
+        switch (opcode) {
+            case 9:
+                frame.append("NOTIFICATION ");
+                getBytes(&ch,1);
+                if (ch == '\1')
+                    frame.append("Public");
+                else
+                    frame.append("Pm");
+            case 10:
+            case 11:
+                char error[2];
+                getBytes(&error , 2);
+                short mistake = bytesToShort(error);
+                frame.append("ERROR" + std::to_string(mistake));
+                if (mistake == 3)
+                    terminate = -1;
+                return true;
+        }
     } catch (std::exception &e) {
         std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
         return false;
@@ -102,9 +119,6 @@ bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
 }
 
 bool ConnectionHandler::sendFrameAscii(const std::string &frame, char delimiter) {
-    /*bool result=sendBytes(frame.c_str(),frame.length());
-    if(!result) return false;
-    return sendBytes(&delimiter,1);*/
     std::vector<char> output = encode(frame);
     int size = output.size();
     char send[size];
@@ -179,9 +193,16 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
     return output;
 }
 
-void shortToBytes(short num, char *bytesArr) {
+void ConnectionHandler::shortToBytes(short num, char *bytesArr) {
     bytesArr[0] = ((num >> 8) & 0xFF);
     bytesArr[1] = (num & 0xFF);
+}
+
+short ConnectionHandler::bytesToShort(char* bytesArr)
+{
+    short result = (short)((bytesArr[0] & 0xff) << 8);
+    result += (short)(bytesArr[1] & 0xff);
+    return result;
 }
 
 

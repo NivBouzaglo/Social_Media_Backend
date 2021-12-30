@@ -52,6 +52,8 @@ public:
     std::vector<char> encode(std::string msg);
 
     void shortToBytes(short num, char* bytesArr));
+
+    short bytesToShort(char* bytesArr);
 }; //class ConnectionHandler
  
 #endif
