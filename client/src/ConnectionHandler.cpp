@@ -111,16 +111,23 @@ bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
                 frame.append("ACK ");
                 char messageOpcode[2];
                 getBytes(&messageOpcode, 2);
-                frame.append(std::to_string(messageOpcode));
-                switch (messageOpcode) {
+                short mOp = bytesToShort(messageOpcode);
+                frame.append(std::to_string(mOp));
+                switch (mOp) {
                     case 3:
                         terminate = 1;
                     case 4:
                         char letter;
                         getBytes(&letter,1);
-                        while (letter!='\0'){
+                        if(letter == '\0')
+                            frame.append(" 0 ");
+                        else
+                            frame.append(" 1 ");
+                        while (true) {
+                            getBytes(&letter, 1);
+                            if (letter == ';')
+                                break;
                             frame.append(letter);
-                            getBytes(&letter,1);
                         }
                     case 7:
                         char age[2];
