@@ -187,12 +187,12 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
             shortToBytes((short)5, opcode);
             output.push_back(opcode[0]);
             output.push_back(opcode[1]);
-            getline(iss, word, ' ');
-            for (int j = 0; j < word.length; ++j) {
-                output.push_back(word[j]);
+            while (getline(iss, word, ' ')) {
+                for (int j = 0; j < word.length; ++j) {
+                    output.push_back(word[j]);
+                }
             }
             output.push_back('\0');
-
         case "PM":
             shortToBytes((short)6, opcode);
             output.push_back(opcode[0]);
@@ -202,16 +202,17 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
                 output.push_back(word[j]);
             }
             output.push_back('\0');
-            getline(iss, word, ' ');
-            for (int j = 0; j < word.length; ++j) {
-                output.push_back(word[j]);
+            while (getline(iss, word, ' ')) {
+                for (int j = 0; j < word.length; ++j) {
+                    output.push_back(word[j]);
+                }
             }
             output.push_back('\0');
+            //time
         case "LOGSTAT":
             shortToBytes((short)7, opcode);
             output.push_back(opcode[0]);
             output.push_back(opcode[1]);
-
         case "STAT":
             shortToBytes((short)8, opcode);
             output.push_back(opcode[0]);
