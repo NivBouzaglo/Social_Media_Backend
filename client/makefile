@@ -1,5 +1,5 @@
 CFLAGS:=-c -Wall -Weffc++ -g -std=c++11 -Iinclude
-LDFLAGS:=-lboost_system
+LDFLAGS:=-lboost_system -lboost_thread -pthread
 
 all: EchoClient
 	g++ -o bin/ConnectionHandler.o bin/echoClient.o $(LDFLAGS)

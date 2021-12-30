@@ -6,6 +6,7 @@
 #include <boost/asio.hpp>
 #include <vector>
 
+
 using boost::asio::ip::tcp;
 using namespace std;
 
@@ -23,7 +24,7 @@ public:
     // Connect to the remote machine
     bool connect();
     int getTerminate();
-    void setTerminate();
+    void setTerminate(int i);
     // Read a fixed number of bytes from the server - blocking.
     // Returns false in case the connection is closed before bytesToRead bytes can be read.
     bool getBytes(char bytes[], unsigned int bytesToRead);
@@ -53,7 +54,7 @@ public:
 
     std::vector<char> encode(std::string msg);
 
-    void shortToBytes(short num, char* bytesArr));
+    void shortToBytes(short num, char* bytesArr);
 
     short bytesToShort(char* bytesArr);
 }; //class ConnectionHandler

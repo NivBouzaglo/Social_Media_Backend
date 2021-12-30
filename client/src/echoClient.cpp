@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <ConnectionHandler.h>
 #include <thread>
-#include "C:\Users\nivbo\ClionProjects\spl3\client\src\keyboardInput.cpp"
+#include "../src/keyboardInput.cpp"
 #include "readFromServer.cpp"
 
 /**
@@ -26,9 +26,9 @@ int main (int argc, char *argv[]) {
     keyboardInput task1(&connectionHandler);
     readFromServer task2(&connectionHandler);
     std::thread t(keyboardInput::run() , task1);
-    std::thread t1(readFromServer::run() , task2);
+    std::thread t1(task2);
     t.join();
-    t1.join()
+    t1.join();
 
     return 0;
 }

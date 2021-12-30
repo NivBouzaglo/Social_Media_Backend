@@ -10,6 +10,7 @@
 #include <boost/asio.hpp>
 
 using namespace std;
+
 using boost::asio::ip::tcp;
 
 class keyboardInput {
@@ -18,16 +19,16 @@ private:
 public:
     keyboardInput(ConnectionHandler *connectionHandler1) : connectionHandler(connectionHandler1) {}
 
-    void run() {
+  void run() {
         while (connectionHandler->getTerminate() == 0) {
             const short bufsize = 1024;
             char buf[bufsize];
             std::cin.getline(buf, bufsize);
             std::string line(buf);
-            connectionHandler.sendLine(line);
+            connectionHandler->sendLine(line);
             if (line == "LOGOUT") {
                 while (1) {
-                    if (connectionHandler.getTerminate() == 1)
+                    if (connectionHandler->getTerminate() == 1)
                         break;
                     else if (connectionHandler->getTerminate() == -1) {
                         connectionHandler->setTerminate(0);

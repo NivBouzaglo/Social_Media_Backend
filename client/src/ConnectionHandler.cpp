@@ -1,5 +1,6 @@
 #include "../include/ConnectionHandler.h"
 #include <boost/asio/ip/tcp.hpp>
+
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -24,8 +25,8 @@ int ConnectionHandler::getTerminate() {
     return terminate;
 }
 
-void ConnectionHendler::setTerminate() {
-    terminate = 1;
+void ConnectionHandler::setTerminate(int i) {
+    terminate = i;
 }
 
 bool ConnectionHandler::connect() {
@@ -91,78 +92,87 @@ bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
     // Stop when we encounter the null character. 
     // Notice that the null character is not appended to the frame string.
     try {
-        getBytes(&opcodeBytes , 2);
+        getBytes(opcodeBytes, 2);
         short opcode = bytesToShort(opcodeBytes);
-        switch (opcode) {
-            case 9:
-                frame.append("NOTIFICATION ");
-                getBytes(&ch,1);
-                if (ch == '\1')
-                    frame.append("Public ");
+        if (opcode == 9) {
+            frame.append("NOTIFICATION ");
+            getBytes(&ch, 1);
+            if (ch == '\1')
+                frame.append("Public ");
+            else
+                frame.append("Pm ");
+            while (true) {
+                getBytes(&ch, 1);
+                if (ch == ';')
+                    break;
+                frame.append(&ch);
+            }
+        } else if (opcode == 10) {
+            frame.append("ACK ");
+            char messageOpcode[2];
+            getBytes(messageOpcode, 2);
+            short mOp = bytesToShort(messageOpcode);
+            frame.append(std::to_string(mOp));
+            if(mOp == 3) {
+                terminate = 1;
+            }
+            else if(mOp == 4) {
+                char letter;
+                getBytes(&letter, 1);
+                if (letter == '\0')
+                    frame.append(" 0 ");
                 else
-                    frame.append("Pm ");
-                while (true){
-                    getBytes(&ch , 1);
-                    if (ch == ';')
+                    frame.append(" 1 ");
+                while (true) {
+                    getBytes(&letter, 1);
+                    if (letter == ';')
                         break;
-                    frame.append(ch);
+                    frame.append(&letter);
                 }
-            case 10:
-                frame.append("ACK ");
-                char messageOpcode[2];
-                getBytes(&messageOpcode, 2);
-                short mOp = bytesToShort(messageOpcode);
-                frame.append(std::to_string(mOp));
-                switch (mOp) {
-                    case 3:
-                        terminate = 1;
-                    case 4:
-                        char letter;
-                        getBytes(&letter,1);
-                        if(letter == '\0')
-                            frame.append(" 0 ");
-                        else
-                            frame.append(" 1 ");
-                        while (true) {
-                            getBytes(&letter, 1);
-                            if (letter == ';')
-                                break;
-                            frame.append(letter);
-                        }
-                    case 7:
-                        char age[2];
-                        getBytes(&age, 2);
-                        frame.append(" "+std::to_string(age));
-                        char NumPosts[2];
-                        getBytes(&NumPosts, 2);
-                        frame.append(" "+std::to_string(NumPosts));
-                        char NumFollowers[2];
-                        getBytes(&NumFollowers, 2);
-                        frame.append(" "+std::to_string(NumFollowers));
-                        char NumFollowing[2];
-                        getBytes(&NumFollowing, 2);
-                        frame.append(" "+std::to_string(NumFollowing));
-                    case 8:
-                        char age[2];
-                        getBytes(&age, 2);
-                        frame.append(" "+std::to_string(age));
-                        char NumPosts[2];
-                        getBytes(&NumPosts, 2);
-                        frame.append(" "+std::to_string(NumPosts));
-                        char NumFollowers[2];
-                        getBytes(&NumFollowers, 2);
-                        frame.append(" "+std::to_string(NumFollowers));
-                        char NumFollowing[2];
-                        getBytes(&NumFollowing, 2);
-                        frame.append(" "+std::to_string(NumFollowing));
-                }
-            case 11:
-                char error[2];
-                getBytes(&error , 2);
-                short mistake = bytesToShort(error);
-                frame.append("ERROR " + std::to_string(mistake));
-                if (mistake == 3)
-                    terminate = -1;
+            }
+            else if(mOp == 7) {
+                char age[2];
+                getBytes(age, 2);
+                short a = bytesToShort(age);
+                frame.append(" " + std::to_string(a));
+                char NumPosts[2];
+                getBytes(NumPosts, 2);
+                short n = bytesToShort(NumPosts);
+                frame.append(" " + std::to_string(n));
+                char NumFollowers[2];
+                getBytes(NumFollowers, 2);
+                short f = bytesToShort(NumFollowers);
+                frame.append(" " + std::to_string(f));
+                char NumFollowing[2];
+                getBytes(NumFollowing, 2);
+                short l = bytesToShort(NumFollowing);
+                frame.append(" " + std::to_string(l));
+            }
+            else if(mOp == 8){
+                    char age[2];
+                    getBytes(age, 2);
+                    short a = bytesToShort(age);
+                    frame.append(" " + std::to_string(a));
+                    char NumPosts[2];
+                    getBytes(NumPosts, 2);
+                    short n1 = bytesToShort(NumPosts);
+                    frame.append(" " + std::to_string(n1));
+                    char NumFollowers[2];
+                    getBytes(NumFollowers, 2);
+                    short f1 = bytesToShort(NumFollowers);
+                    frame.append(" " + std::to_string(f1));
+                    char NumFollowing[2];
+                    getBytes(NumFollowing, 2);
+                    short l1 = bytesToShort(NumFollowing);
+                    frame.append(" " + std::to_string(l1));
+            }
+        } else if (opcode == 11) {
+            char error[2];
+            getBytes(error, 2);
+            short mistake = bytesToShort(error);
+            frame.append("ERROR " + std::to_string(mistake));
+            if (mistake == 3)
+                terminate = -1;
         }
         return true;
     } catch (std::exception &e) {
@@ -185,108 +195,105 @@ bool ConnectionHandler::sendFrameAscii(const std::string &frame, char delimiter)
 std::vector<char> ConnectionHandler::encode(std::string msg) {
     std::vector<char> output;
     std::istringstream iss(msg);
-    std::string word;
+    std::string word = "";
     char opcode[2];
     int i = 0;
-    getline(iss, word, ' ')
-    switch (word) {
-        case "REGISTER":
-            shortToBytes((short) 1, opcode);
-            output.push_back(opcode[0]);
-            output.push_back(opcode[1]);
-            while (getline(iss, word, ' ') && i < 3) {
-                for (int k = 0; k < word.length(); k++) {
+    getline(iss, word, ' ');
+    if (word == "REGISTER") {
+        shortToBytes((short) 1, opcode);
+        output.push_back(opcode[0]);
+        output.push_back(opcode[1]);
+        while (getline(iss, word, ' ') && i < 3) {
+            for (int k = 0; k <(int) word.length(); k++) {
+                output.push_back(word[k]);
+            }
+            output.push_back('\0');
+            i++;
+        }
+    } else if (word == "LOGIN") {
+        shortToBytes((short) 2, opcode);
+        output.push_back(opcode[0]);
+        output.push_back(opcode[1]);
+        while (getline(iss, word, ' ') && i < 3) {
+            if (i != 2) {
+                for (int k = 0; k < (int)word.length(); k++) {
                     output.push_back(word[k]);
                 }
                 output.push_back('\0');
-                i++;
-            }
-        case "LOGIN":
-            shortToBytes((short) 2, opcode);
-            output.push_back(opcode[0]);
-            output.push_back(opcode[1]);
-            while (getline(iss, word, ' ') && i < 3) {
-                if (i != 2) {
-                    for (int k = 0; k < word.length(); k++) {
-                        output.push_back(word[k]);
-                    }
+            } else {
+                if (word == "1")
+                    output.push_back('\1');
+                else if (word == "0")
                     output.push_back('\0');
-                }
-                else{
-                    if (word == "1")
-                        output.push_back('\1');
-                    else if (word == "0")
-                        output.push_back('\0');
-                }
-                i++;
             }
-        case "LOGOUT":
-            shortToBytes((short) 3, opcode);
-            output.push_back(opcode[0]);
-            output.push_back(opcode[1]);
-        case "FOLLOW":
-            shortToBytes((short) 4, opcode);
-            output.push_back(opcode[0]);
-            output.push_back(opcode[1]);
-            getline(iss, word, ' ');
-            if (word == "1")
-                output.push_back('\1');
-            else
-                output.push_back('\0');
-            getline(iss, word, ' ');
-            for (int j = 0; j < word.length; ++j) {
-                output.push_back(word[j]);
-            }
-        case "POST":
-            shortToBytes((short)5, opcode);
-            output.push_back(opcode[0]);
-            output.push_back(opcode[1]);
-            while (getline(iss, word, ' ')) {
-                for (int j = 0; j < word.length; ++j) {
-                    output.push_back(word[j]);
-                }
-            }
-        case "PM":
-            shortToBytes((short)6, opcode);
-            output.push_back(opcode[0]);
-            output.push_back(opcode[1]);
-            getline(iss, word, ' ');
-            for (int j = 0; j < word.length; ++j) {
-                output.push_back(word[j]);
-            }
+            i++;
+        }
+    } else if (word == "LOGOUT") {
+        shortToBytes((short) 3, opcode);
+        output.push_back(opcode[0]);
+        output.push_back(opcode[1]);
+    } else if (word == "FOLLOW") {
+        shortToBytes((short) 4, opcode);
+        output.push_back(opcode[0]);
+        output.push_back(opcode[1]);
+        getline(iss, word, ' ');
+        if (word == "1")
+            output.push_back('\1');
+        else
             output.push_back('\0');
-            while (getline(iss, word, ' ')) {
-                for (int j = 0; j < word.length; ++j) {
-                    output.push_back(word[j]);
-                }
-            }
-            std::time_t t = std::time(0);   // get time now
-            std::tm* now = std::localtime(&t);
-            char time[];
-            shortToBytes((short)now, time);
-            for(int i=0; i<time.length(); i++)
-                output.push_back(time[i]);
-            //time
-        case "LOGSTAT":
-            shortToBytes((short)7, opcode);
-            output.push_back(opcode[0]);
-            output.push_back(opcode[1]);
-        case "STAT":
-            shortToBytes((short)8, opcode);
-            output.push_back(opcode[0]);
-            output.push_back(opcode[1]);
-            getline(iss, word, ' ');
-            for (int j = 0; j < word.length; ++j) {
+        getline(iss, word, ' ');
+        for (int j = 0; j < (int)word.length(); ++j) {
+            output.push_back(word[j]);
+        }
+    } else if (word == "POST") {
+        shortToBytes((short) 5, opcode);
+        output.push_back(opcode[0]);
+        output.push_back(opcode[1]);
+        while (getline(iss, word, ' ')) {
+            for (int j = 0; j < (int)word.length(); ++j) {
                 output.push_back(word[j]);
             }
-        case "BLOCK":
-            shortToBytes((short)12, opcode);
-            output.push_back(opcode[0]);
-            output.push_back(opcode[1]);
-            getline(iss, word, ' ');
-            for (int j = 0; j < word.length; ++j) {
+        }
+    } else if (word == "PM") {
+        shortToBytes((short) 6, opcode);
+        output.push_back(opcode[0]);
+        output.push_back(opcode[1]);
+        getline(iss, word, ' ');
+        for (int j = 0; j < (int)word.length(); ++j) {
+            output.push_back(word[j]);
+        }
+        output.push_back('\0');
+        while (getline(iss, word, ' ')) {
+            for (int j = 0; j < (int)word.length(); ++j) {
                 output.push_back(word[j]);
             }
+        }
+        /*std::time_t t = std::time(0);   // get time now
+        std::tm* now = std::localtime(&t);
+        char time[2];
+        shortToBytes(now, time);
+        for (int i = 0; i < time.length(); i++)
+            output.push_back(time[i]);*/
+    } else if (word == "LOGSTAT") {
+        shortToBytes((short) 7, opcode);
+        output.push_back(opcode[0]);
+        output.push_back(opcode[1]);
+    } else if (word == "STAT") {
+        shortToBytes((short) 8, opcode);
+        output.push_back(opcode[0]);
+        output.push_back(opcode[1]);
+        getline(iss, word, ' ');
+        for (int j = 0; j < (int)word.length(); ++j) {
+            output.push_back(word[j]);
+        }
+    } else if (word == "BLOCK") {
+        shortToBytes((short) 12, opcode);
+        output.push_back(opcode[0]);
+        output.push_back(opcode[1]);
+        getline(iss, word, ' ');
+        for (int j = 0; j < (int)word.length(); ++j) {
+            output.push_back(word[j]);
+        }
     }
     output.push_back(';');
     return output;
@@ -297,10 +304,9 @@ void ConnectionHandler::shortToBytes(short num, char *bytesArr) {
     bytesArr[1] = (num & 0xFF);
 }
 
-short ConnectionHandler::bytesToShort(char* bytesArr)
-{
-    short result = (short)((bytesArr[0] & 0xff) << 8);
-    result += (short)(bytesArr[1] & 0xff);
+short ConnectionHandler::bytesToShort(char *bytesArr) {
+    short result = (short) ((bytesArr[0] & 0xff) << 8);
+    result += (short) (bytesArr[1] & 0xff);
     return result;
 }
 
