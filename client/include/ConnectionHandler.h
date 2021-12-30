@@ -4,8 +4,10 @@
 #include <string>
 #include <iostream>
 #include <boost/asio.hpp>
+#include <vector>
 
 using boost::asio::ip::tcp;
+using namespace std;
 
 class ConnectionHandler {
 private:
