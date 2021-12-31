@@ -1,8 +1,9 @@
 #include <stdlib.h>
-#include <ConnectionHandler.h>
+#include "../include/ConnectionHandler.h"
 #include <thread>
 #include "../src/keyboardInput.cpp"
 #include "readFromServer.cpp"
+#include "ConnectionHandler.cpp"
 
 /**
 * This code assumes that the server replies the exact text the client sent it (as opposed to the practical session example)
@@ -25,8 +26,8 @@ int main (int argc, char *argv[]) {
 
     keyboardInput task1(&connectionHandler);
     readFromServer task2(&connectionHandler);
-    std::thread t(keyboardInput::run() , task1);
-    std::thread t1(task2);
+    std::thread t(&keyboardInput::run , &task1);
+    std::thread t1(&readFromServer::run , &task2);
     t.join();
     t1.join();
 

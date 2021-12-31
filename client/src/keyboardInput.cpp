@@ -1,17 +1,14 @@
 //
 // Created by nivbo on 12/29/2021.
 //
-#include "../include/ConnectionHandler.h"
+
 #include <iostream>
 #include <boost/thread.hpp>
-#include <sstream>
-#include <fstream>
 #include <string>
 #include <boost/asio.hpp>
+#include "../include/ConnectionHandler.h"
 
 using namespace std;
-
-using boost::asio::ip::tcp;
 
 class keyboardInput {
 private:
