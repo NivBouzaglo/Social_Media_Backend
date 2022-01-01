@@ -10,7 +10,7 @@
 using boost::asio::ip::tcp;
 using namespace std;
 
-class ConnectionHandler {
+class connectionHandler {
 private:
 	const std::string host_;
 	const short port_;
@@ -18,8 +18,8 @@ private:
 	tcp::socket socket_;
     int terminate;
 public:
-    ConnectionHandler(std::string host, short port);
-    virtual ~ConnectionHandler();
+    connectionHandler(std::string host, short port);
+    virtual ~connectionHandler();
  
     // Connect to the remote machine
     bool connect();
@@ -57,6 +57,6 @@ public:
     void shortToBytes(short num, char* bytesArr);
 
     short bytesToShort(char* bytesArr);
-}; //class ConnectionHandler
+}; //class connectionHandler
  
 #endif

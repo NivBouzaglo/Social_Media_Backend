@@ -1,4 +1,4 @@
-#include "../include/ConnectionHandler.h"
+#include "../include/connectionHandler.h"
 #include <boost/asio/ip/tcp.hpp>
 
 #include <iostream>
@@ -14,22 +14,22 @@ using std::endl;
 using std::string;
 using namespace std;
 
-ConnectionHandler::ConnectionHandler(string host, short port) : host_(host), port_(port), io_service_(),
+connectionHandler::connectionHandler(string host, short port) : host_(host), port_(port), io_service_(),
                                                                 socket_(io_service_), terminate(0) {}
 
-ConnectionHandler::~ConnectionHandler() {
+connectionHandler::~connectionHandler() {
     close();
 }
 
-int ConnectionHandler::getTerminate() {
+int connectionHandler::getTerminate() {
     return terminate;
 }
 
-void ConnectionHandler::setTerminate(int i) {
+void connectionHandler::setTerminate(int i) {
     terminate = i;
 }
 
-bool ConnectionHandler::connect() {
+bool connectionHandler::connect() {
     std::cout << "Starting connect to "
               << host_ << ":" << port_ << std::endl;
     try {
@@ -46,7 +46,7 @@ bool ConnectionHandler::connect() {
     return true;
 }
 
-bool ConnectionHandler::getBytes(char bytes[], unsigned int bytesToRead) {
+bool connectionHandler::getBytes(char bytes[], unsigned int bytesToRead) {
     size_t tmp = 0;
     boost::system::error_code error;
     try {
@@ -62,7 +62,7 @@ bool ConnectionHandler::getBytes(char bytes[], unsigned int bytesToRead) {
     return true;
 }
 
-bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
+bool connectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
     int tmp = 0;
     boost::system::error_code error;
     try {
@@ -78,15 +78,15 @@ bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
     return true;
 }
 
-bool ConnectionHandler::getLine(std::string &line) {
+bool connectionHandler::getLine(std::string &line) {
     return getFrameAscii(line, '\n');
 }
 
-bool ConnectionHandler::sendLine(std::string &line) {
+bool connectionHandler::sendLine(std::string &line) {
     return sendFrameAscii(line, '\n');
 }
 
-bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
+bool connectionHandler::getFrameAscii(std::string &frame, char delimiter) {
     char ch;
     char opcodeBytes[2];
     // Stop when we encounter the null character. 
@@ -182,7 +182,7 @@ bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
     return false;
 }
 
-bool ConnectionHandler::sendFrameAscii(const std::string &frame, char delimiter) {
+bool connectionHandler::sendFrameAscii(const std::string &frame, char delimiter) {
     std::vector<char> output = encode(frame);
     int size = output.size();
     char send[size];
@@ -192,7 +192,7 @@ bool ConnectionHandler::sendFrameAscii(const std::string &frame, char delimiter)
     return sendBytes(send, size);
 }
 
-std::vector<char> ConnectionHandler::encode(std::string msg) {
+std::vector<char> connectionHandler::encode(std::string msg) {
     std::vector<char> output;
     std::istringstream iss(msg);
     std::string word = "";
@@ -299,12 +299,12 @@ std::vector<char> ConnectionHandler::encode(std::string msg) {
     return output;
 }
 
-void ConnectionHandler::shortToBytes(short num, char *bytesArr) {
+void connectionHandler::shortToBytes(short num, char *bytesArr) {
     bytesArr[0] = ((num >> 8) & 0xFF);
     bytesArr[1] = (num & 0xFF);
 }
 
-short ConnectionHandler::bytesToShort(char *bytesArr) {
+short connectionHandler::bytesToShort(char *bytesArr) {
     short result = (short) ((bytesArr[0] & 0xff) << 8);
     result += (short) (bytesArr[1] & 0xff);
     return result;
@@ -312,7 +312,7 @@ short ConnectionHandler::bytesToShort(char *bytesArr) {
 
 
 // Close down the connection properly.
-void ConnectionHandler::close() {
+void connectionHandler::close() {
     try {
         socket_.close();
     } catch (...) {

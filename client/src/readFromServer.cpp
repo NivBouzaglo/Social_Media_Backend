@@ -6,16 +6,12 @@
 #include <sstream>
 #include <fstream>
 #include <string>
-#include "../include/ConnectionHandler.h"
-
+#include "../include/connectionHandler.h"
+#include "../include/readFromServer.h"
 using namespace std;
-class readFromServer{
-private:
-    ConnectionHandler *connectionHandler1;
-public:
-    readFromServer(ConnectionHandler *connectionHandler1): connectionHandler1(connectionHandler1){}
+    readFromServer::readFromServer(connectionHandler *connectionHandler1): connectionHandler1(connectionHandler1){}
 
-   void run(){
+   void readFromServer:: run(){
         while(1){
             std::string answer="";
             if (connectionHandler1->getLine(answer)){
@@ -26,4 +22,4 @@ public:
 
         }
     }
-};
+

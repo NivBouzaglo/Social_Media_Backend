@@ -1,9 +1,8 @@
 #include <stdlib.h>
-#include "../include/ConnectionHandler.h"
+#include "../include/connectionHandler.h"
 #include <thread>
-#include "../src/keyboardInput.cpp"
-#include "readFromServer.cpp"
-#include "ConnectionHandler.cpp"
+#include "../include/readFromServer.h"
+#include "../include/keyboardInput.h"
 
 /**
 * This code assumes that the server replies the exact text the client sent it (as opposed to the practical session example)
@@ -18,7 +17,7 @@ int main (int argc, char *argv[]) {
     std::string host = argv[1];
     short port = atoi(argv[2]);
     
-    ConnectionHandler connectionHandler(host, port);
+    connectionHandler connectionHandler(host, port);
     if (!connectionHandler.connect()) {
         std::cerr << "Cannot connect to " << host << ":" << port << std::endl;
         return 1;
