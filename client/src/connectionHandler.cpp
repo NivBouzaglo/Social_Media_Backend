@@ -92,8 +92,10 @@ bool connectionHandler::getFrameAscii(std::string &frame, char delimiter) {
     // Stop when we encounter the null character. 
     // Notice that the null character is not appended to the frame string.
     try {
-        getBytes(opcodeBytes, 2);
+        getBytes(&opcodeBytes[0], 1);
+        getBytes(&opcodeBytes[1] ,1);
         short opcode = bytesToShort(opcodeBytes);
+        cout<<opcode<<endl;
         if (opcode == 9) {
             frame.append("NOTIFICATION ");
             getBytes(&ch, 1);
@@ -110,7 +112,9 @@ bool connectionHandler::getFrameAscii(std::string &frame, char delimiter) {
         } else if (opcode == 10) {
             frame.append("ACK ");
             char messageOpcode[2];
-            getBytes(messageOpcode, 2);
+
+            getBytes(&messageOpcode[0], 1);
+            getBytes(&messageOpcode[1], 1);
             short mOp = bytesToShort(messageOpcode);
             frame.append(std::to_string(mOp));
             if (mOp == 3) {
@@ -185,6 +189,7 @@ bool connectionHandler::sendFrameAscii(const std::string &frame, char delimiter)
     char send[size];
     for (int i = 0; i < size; ++i) {
         send[i] = output[i];
+        cout<<output[i]<<endl;
     }
     return sendBytes(send, size);
 }
@@ -258,11 +263,6 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         shortToBytes((short) 6, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
-        getline(iss, word,' ');
-        for (char & j : word) {
-            output.push_back(j);
-        }
-        output.push_back('\0');
         while (getline(iss, word, ' ')) {
             for (char & j : word) {
                 output.push_back(j);
