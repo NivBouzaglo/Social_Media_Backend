@@ -107,7 +107,8 @@ bool connectionHandler::getFrameAscii(std::string &frame, char delimiter) {
                     break;
                 frame.append(&ch);
             }
-        } else if (opcode == 10) {
+        }  if (opcode == 10) {
+            std::cout<<"ack";
             frame.append("ACK ");
             char messageOpcode[2];
             getBytes(messageOpcode, 2);
@@ -170,9 +171,10 @@ bool connectionHandler::getFrameAscii(std::string &frame, char delimiter) {
             frame.append("ERROR " + std::to_string(mistake));
             if (mistake == 3)
                 terminate = -1;
+            return true;
         }
-        return true;
     } catch (std::exception &e) {
+        std::cout<<"error";
         std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
         return false;
     }

@@ -15,7 +15,8 @@ using namespace std;
         while(1){
             std::string answer="";
             if (connectionHandler1->getLine(answer)){
-                std::cout << answer.c_str() << endl;
+                std::cout<<"in server";
+                //std::cout << answer.c_str() << endl;
                 if (answer == "ACK 3")
                     break;
             }
