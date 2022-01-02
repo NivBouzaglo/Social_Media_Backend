@@ -19,7 +19,6 @@ void keyboardInput::run() {
             char buf[bufsize];
             std::cin.getline(buf, bufsize);
             std::string line(buf);
-            cout << line << endl;
             _connectionHandler->sendLine(line);
             if (line == "LOGOUT") {
                 while (1) {
