@@ -113,10 +113,9 @@ bool connectionHandler::getFrameAscii(std::string &frame, char delimiter) {
             getBytes(messageOpcode, 2);
             short mOp = bytesToShort(messageOpcode);
             frame.append(std::to_string(mOp));
-            if(mOp == 3) {
+            if (mOp == 3) {
                 terminate = 1;
-            }
-            else if(mOp == 4) {
+            } else if (mOp == 4) {
                 char letter;
                 getBytes(&letter, 1);
                 if (letter == '\0')
@@ -129,8 +128,7 @@ bool connectionHandler::getFrameAscii(std::string &frame, char delimiter) {
                         break;
                     frame.append(&letter);
                 }
-            }
-            else if(mOp == 7) {
+            } else if (mOp == 7) {
                 char age[2];
                 getBytes(age, 2);
                 short a = bytesToShort(age);
@@ -147,24 +145,23 @@ bool connectionHandler::getFrameAscii(std::string &frame, char delimiter) {
                 getBytes(NumFollowing, 2);
                 short l = bytesToShort(NumFollowing);
                 frame.append(" " + std::to_string(l));
-            }
-            else if(mOp == 8){
-                    char age[2];
-                    getBytes(age, 2);
-                    short a = bytesToShort(age);
-                    frame.append(" " + std::to_string(a));
-                    char NumPosts[2];
-                    getBytes(NumPosts, 2);
-                    short n1 = bytesToShort(NumPosts);
-                    frame.append(" " + std::to_string(n1));
-                    char NumFollowers[2];
-                    getBytes(NumFollowers, 2);
-                    short f1 = bytesToShort(NumFollowers);
-                    frame.append(" " + std::to_string(f1));
-                    char NumFollowing[2];
-                    getBytes(NumFollowing, 2);
-                    short l1 = bytesToShort(NumFollowing);
-                    frame.append(" " + std::to_string(l1));
+            } else if (mOp == 8) {
+                char age[2];
+                getBytes(age, 2);
+                short a = bytesToShort(age);
+                frame.append(" " + std::to_string(a));
+                char NumPosts[2];
+                getBytes(NumPosts, 2);
+                short n1 = bytesToShort(NumPosts);
+                frame.append(" " + std::to_string(n1));
+                char NumFollowers[2];
+                getBytes(NumFollowers, 2);
+                short f1 = bytesToShort(NumFollowers);
+                frame.append(" " + std::to_string(f1));
+                char NumFollowing[2];
+                getBytes(NumFollowing, 2);
+                short l1 = bytesToShort(NumFollowing);
+                frame.append(" " + std::to_string(l1));
             }
         } else if (opcode == 11) {
             char error[2];
@@ -199,15 +196,17 @@ std::vector<char> connectionHandler::encode(std::string msg) {
     char opcode[2];
     int i = 0;
     getline(iss, word, ' ');
+    cout<<word<<endl;
     if (word == "REGISTER") {
         shortToBytes((short) 1, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
-        while (getline(iss, word, ' ') && i < 3) {
-            for (int k = 0; k <(int) word.length(); k++) {
+        while (getline(iss, word) && i < 3) {
+            for (int k = 0; k < (int) word.length(); k++) {
                 output.push_back(word[k]);
             }
-            output.push_back('\0');
+            if (i != 2)
+                output.push_back('\0');
             i++;
         }
     } else if (word == "LOGIN") {
@@ -216,7 +215,7 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         output.push_back(opcode[1]);
         while (getline(iss, word, ' ') && i < 3) {
             if (i != 2) {
-                for (int k = 0; k < (int)word.length(); k++) {
+                for (int k = 0; k < (int) word.length(); k++) {
                     output.push_back(word[k]);
                 }
                 output.push_back('\0');
@@ -242,7 +241,7 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         else
             output.push_back('\0');
         getline(iss, word, ' ');
-        for (int j = 0; j < (int)word.length(); ++j) {
+        for (int j = 0; j < (int) word.length(); ++j) {
             output.push_back(word[j]);
         }
     } else if (word == "POST") {
@@ -250,7 +249,7 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
         while (getline(iss, word, ' ')) {
-            for (int j = 0; j < (int)word.length(); ++j) {
+            for (int j = 0; j < (int) word.length(); ++j) {
                 output.push_back(word[j]);
             }
         }
@@ -258,13 +257,13 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         shortToBytes((short) 6, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
-        getline(iss, word, ' ');
-        for (int j = 0; j < (int)word.length(); ++j) {
+        getline(iss, word,' ');
+        for (int j = 0; j < (int) word.length(); ++j) {
             output.push_back(word[j]);
         }
         output.push_back('\0');
         while (getline(iss, word, ' ')) {
-            for (int j = 0; j < (int)word.length(); ++j) {
+            for (int j = 0; j < (int) word.length(); ++j) {
                 output.push_back(word[j]);
             }
         }
@@ -279,11 +278,11 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
     } else if (word == "STAT") {
-        shortToBytes((short) 8, opcode);
+        shortToBytes((short) 8 , opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
         getline(iss, word, ' ');
-        for (int j = 0; j < (int)word.length(); ++j) {
+        for (int j = 0; j < (int) word.length(); ++j) {
             output.push_back(word[j]);
         }
     } else if (word == "BLOCK") {
@@ -291,11 +290,11 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
         getline(iss, word, ' ');
-        for (int j = 0; j < (int)word.length(); ++j) {
+        for (int j = 0; j < (int) word.length(); ++j) {
             output.push_back(word[j]);
         }
     }
-    output.push_back(';');
+    output.push_back('\n');
     return output;
 }
 
