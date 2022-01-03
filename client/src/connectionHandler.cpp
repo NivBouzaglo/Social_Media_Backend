@@ -254,12 +254,10 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         shortToBytes((short) 6, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
-        output.push_back('\0');
         while (getline(iss, word, ' ')) {
             for (char &j: word) {
                 output.push_back(j);
             }
-            output.push_back('\0');
         }
         /*std::time_t t = std::time(0);   // get time now
         std::tm* now = std::localtime(&t);
@@ -275,17 +273,19 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         shortToBytes((short) 8, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
-        getline(iss, word, ' ');
-        for (int j = 0; j < (int) word.length(); ++j) {
-            output.push_back(word[j]);
+        while (getline(iss, word, ' ')) {
+            for (char &j: word) {
+                output.push_back(j);
+            }
         }
     } else if (word == "BLOCK") {
         shortToBytes((short) 12, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
-        getline(iss, word, ' ');
-        for (int j = 0; j < (int) word.length(); ++j) {
-            output.push_back(word[j]);
+        while (getline(iss, word, ' ')) {
+            for (char &j: word) {
+                output.push_back(j);
+            }
         }
     }
     output.push_back('\n');
@@ -347,10 +347,6 @@ std::string connectionHandler::translateMessage() {
         } else if (mOp == 4) {
             char letter;
             getBytes(&letter, 1);
-            if (letter == '\0')
-                frame.append(" 0 ");
-            else
-                frame.append(" 1 ");
             while (true) {
                 getBytes(&letter, 1);
                 if (letter == ';')
