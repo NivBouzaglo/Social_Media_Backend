@@ -313,8 +313,8 @@ void connectionHandler::close() {
     }
 }
 
-std::String connectionHandler::messageTranslate() {
-    std::String frame;
+std::string connectionHandler::messageTranslate() {
+    std::string frame;
     char ch;
     char opcodeBytes[2];
     // Stop when we encounter the null character.
