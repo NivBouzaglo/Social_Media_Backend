@@ -58,7 +58,7 @@ public:
 
     short bytesToShort(char* bytesArr);
 
-    std::string messageTranslate();
+    std::string translateMessage();
 }; //class connectionHandler
  
 #endif

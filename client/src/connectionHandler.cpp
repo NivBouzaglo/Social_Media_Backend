@@ -181,7 +181,6 @@ bool connectionHandler::sendFrameAscii(const std::string &frame, char delimiter)
     char send[size];
     for (int i = 0; i < size; ++i) {
         send[i] = output[i];
-        cout << output[i] << endl;
     }
     return sendBytes(send, size);
 }
@@ -255,6 +254,7 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         shortToBytes((short) 6, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
+        output.push_back('\0');
         while (getline(iss, word, ' ')) {
             for (char &j: word) {
                 output.push_back(j);
@@ -313,7 +313,7 @@ void connectionHandler::close() {
     }
 }
 
-std::string connectionHandler::messageTranslate() {
+std::string connectionHandler::translateMessage() {
     std::string frame;
     char ch;
     char opcodeBytes[2];
