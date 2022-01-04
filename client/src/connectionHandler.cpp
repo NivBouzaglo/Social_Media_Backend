@@ -20,7 +20,6 @@ using std::endl;
 using std::string;
 using namespace std;
 
-
 connectionHandler::connectionHandler(string host, short port) : host_(host), port_(port), io_service_(),
                                                                 socket_(io_service_), terminate(0) {}
 
@@ -103,17 +102,24 @@ bool connectionHandler::getFrameAscii(std::string &frame, char delimiter) {
         getBytes(&opcodeBytes[1] ,1);
         short opcode = bytesToShort(opcodeBytes);
         if (opcode == 9) {
+            std::string word;
             frame.append("NOTIFICATION ");
             getBytes(&ch, 1);
-            if (ch == '\1')
-                frame.append("Public ");
+            if (ch == '0')
+                frame.append("Public");
             else
-                frame.append("Pm ");
+                frame.append("Pm");
             while (true) {
                 getBytes(&ch, 1);
-                if (ch == ';')
+                if (ch == ' '){
+                    frame.append(word+ " ");
+                    word ="";
+                }
+                if (ch == ';') {
+                    frame.append(word);
                     break;
-                frame.append(&ch);
+                }
+                word = word + ch;
             }
         } else if (opcode == 10) {
             frame.append("ACK ");
@@ -303,10 +309,10 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         shortToBytes((short) 8 , opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
-        //getline(iss, word, ' ');
-        iss >> word;
-        for (char &k: word) {
-            output.push_back(k);
+        while (getline(iss, word, ' ')) {
+            for (char & j : word) {
+                output.push_back(j);
+            }
         }
     } else if (word == "BLOCK") {
         shortToBytes((short) 12, opcode);
