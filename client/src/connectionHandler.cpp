@@ -102,7 +102,6 @@ bool connectionHandler::getFrameAscii(std::string &frame, char delimiter) {
         getBytes(&opcodeBytes[0], 1);
         getBytes(&opcodeBytes[1] ,1);
         short opcode = bytesToShort(opcodeBytes);
-        cout<<opcode<<endl;
         if (opcode == 9) {
             frame.append("NOTIFICATION ");
             getBytes(&ch, 1);
@@ -127,17 +126,23 @@ bool connectionHandler::getFrameAscii(std::string &frame, char delimiter) {
             if (mOp == 3) {
                 terminate = 1;
             } else if (mOp == 4) {
+                std::string word;
+                char follow[2];
                 char letter;
-                getBytes(&letter, 1);
-                if (letter == '\0')
+                getBytes(&follow[0], 1);
+                getBytes(&follow[1], 1);
+                short f = bytesToShort(follow);
+                if (f == 0)
                     frame.append(" 0 ");
                 else
                     frame.append(" 1 ");
                 while (true) {
                     getBytes(&letter, 1);
-                    if (letter == ';')
+                    if (letter == ';') {
+                        frame.append(word);
                         break;
-                    frame.append(&letter);
+                    }
+                    word = word + letter;
                 }
             } else if (mOp == 7) {
                 char age[2];
@@ -196,7 +201,6 @@ bool connectionHandler::sendFrameAscii(const std::string &frame, char delimiter)
     char send[size];
     for (int i = 0; i < size; ++i) {
         send[i] = output[i];
-        cout<<output[i]<<endl;
     }
     return sendBytes(send, size);
 }
@@ -270,7 +274,6 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         shortToBytes((short) 6, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
-        output.push_back('\0');
         while (getline(iss, word, ' ')) {
             for (char & j : word) {
                 output.push_back(j);
@@ -297,7 +300,7 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
     } else if (word == "STAT") {
-        shortToBytes((short) 8, opcode);
+        shortToBytes((short) 8 , opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
         //getline(iss, word, ' ');
