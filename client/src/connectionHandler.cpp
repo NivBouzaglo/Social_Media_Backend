@@ -4,15 +4,21 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <chrono>
 
+#include <iostream>
+#include <iomanip>
+#include <ctime>
+
+using std::strftime;
 using boost::asio::ip::tcp;
-
 using std::cin;
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
 using namespace std;
+
 
 connectionHandler::connectionHandler(string host, short port) : host_(host), port_(port), io_service_(),
                                                                 socket_(io_service_), terminate(0) {}
@@ -261,13 +267,22 @@ std::vector<char> connectionHandler::encode(std::string msg) {
             }
             output.push_back('\0');
         }
-        /*std::time_t t = std::time(0);   // get time now
-        std::tm* now = std::localtime(&t);
-        char time[2];
-        shortToBytes(now, time);
-        for (int i = 0; i < time.length(); i++)
-            output.push_back(time[i]);*/
-    } else if (word == "LOGSTAT") {
+        auto t = std::time(nullptr);
+        auto tm = *std::localtime(&t);
+        std::ostringstream oss;
+        oss << std::put_time(&tm, "%d-%m-%Y %H-%M");
+        auto str = oss.str();
+        for (char &c: str){
+            if(c ==' ' || c=='-')
+                output.push_back('\0');
+            else
+                output.push_back(c);
+        }
+
+
+
+    }
+    else if (word == "LOGSTAT") {
         shortToBytes((short) 7, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
@@ -275,9 +290,10 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         shortToBytes((short) 8, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
-        getline(iss, word, ' ');
-        for (int j = 0; j < (int) word.length(); ++j) {
-            output.push_back(word[j]);
+        //getline(iss, word, ' ');
+        iss >> word;
+        for (char &k: word) {
+            output.push_back(k);
         }
     } else if (word == "BLOCK") {
         shortToBytes((short) 12, opcode);
