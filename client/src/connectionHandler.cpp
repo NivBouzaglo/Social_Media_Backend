@@ -281,6 +281,7 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         shortToBytes((short) 6, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
+        output.push_back('\0');
         while (iss >> word) {
             for (char & j : word) {
                 output.push_back(j);
