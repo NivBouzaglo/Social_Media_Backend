@@ -299,9 +299,6 @@ std::vector<char> connectionHandler::encode(std::string msg) {
             else
                 output.push_back(c);
         }
-
-
-
     }
     else if (word == "LOGSTAT") {
         shortToBytes((short) 7, opcode);
@@ -320,7 +317,7 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         shortToBytes((short) 12, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
-        getline(iss, word, ' ');
+       iss >> word;
         for (int j = 0; j < (int) word.length(); ++j) {
             output.push_back(word[j]);
         }
