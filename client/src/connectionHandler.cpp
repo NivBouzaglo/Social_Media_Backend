@@ -92,123 +92,30 @@ bool connectionHandler::sendLine(std::string &line) {
     return sendFrameAscii(line, '\n');
 }
 
-bool connectionHandler::getFrameAscii(std::string &frame, char delimiter) {
-   /* char ch;
-    char opcodeBytes[2];
-    // Stop when we encounter the null character. 
+bool connectionHandler::getFrameAscii(std::string& frame, char delimiter) {
+    char ch;
+    // Stop when we encounter the null character.
     // Notice that the null character is not appended to the frame string.
     try {
-        getBytes(&opcodeBytes[0], 1);
-        getBytes(&opcodeBytes[1] ,1);
-        short opcode = bytesToShort(opcodeBytes);
-        if (opcode == 9) {
-            std::string word;
-            frame.append("NOTIFICATION ");
+        do{
             getBytes(&ch, 1);
-            if (ch == '0')
-                frame.append("Public");
-            else
-                frame.append("Pm");
-            while (true) {
-                getBytes(&ch, 1);
-                if (ch == ' '){
-                    frame.append(word+ " ");
-                    word ="";
-                }
-                if (ch == ';') {
-                    frame.append(word);
-                    break;
-                }
-                word = word + ch;
-            }
-        } else if (opcode == 10) {
-            frame.append("ACK ");
-            char messageOpcode[2];
-
-            getBytes(&messageOpcode[0], 1);
-            getBytes(&messageOpcode[1], 1);
-            short mOp = bytesToShort(messageOpcode);
-            frame.append(std::to_string(mOp));
-            if (mOp == 3) {
-                terminate = 1;
-            } else if (mOp == 4) {
-                std::string word;
-                char follow[2];
-                char letter;
-                getBytes(&follow[0], 1);
-                getBytes(&follow[1], 1);
-                short f = bytesToShort(follow);
-                if (f == 0)
-                    frame.append(" 0 ");
-                else
-                    frame.append(" 1 ");
-                while (true) {
-                    getBytes(&letter, 1);
-                    if (letter == ';') {
-                        frame.append(word);
-                        break;
-                    }
-                    word = word + letter;
-                }
-            } else if (mOp == 7) {
-                char age[2];
-                getBytes(age, 2);
-                short a = bytesToShort(age);
-                frame.append(" " + std::to_string(a));
-                char NumPosts[2];
-                getBytes(NumPosts, 2);
-                short n = bytesToShort(NumPosts);
-                frame.append(" " + std::to_string(n));
-                char NumFollowers[2];
-                getBytes(NumFollowers, 2);
-                short f = bytesToShort(NumFollowers);
-                frame.append(" " + std::to_string(f));
-                char NumFollowing[2];
-                getBytes(NumFollowing, 2);
-                short l = bytesToShort(NumFollowing);
-                frame.append(" " + std::to_string(l));
-            } else if (mOp == 8) {
-                char age[2];
-                getBytes(age, 2);
-                short a = bytesToShort(age);
-                frame.append(" " + std::to_string(a));
-                char NumPosts[2];
-                getBytes(NumPosts, 2);
-                short n1 = bytesToShort(NumPosts);
-                frame.append(" " + std::to_string(n1));
-                char NumFollowers[2];
-                getBytes(NumFollowers, 2);
-                short f1 = bytesToShort(NumFollowers);
-                frame.append(" " + std::to_string(f1));
-                char NumFollowing[2];
-                getBytes(NumFollowing, 2);
-                short l1 = bytesToShort(NumFollowing);
-                frame.append(" " + std::to_string(l1));
-            }
-        } else if (opcode == 11) {
-            char error[2];
-            getBytes(error, 2);
-            short mistake = bytesToShort(error);
-            frame.append("ERROR " + std::to_string(mistake));
-            if (mistake == 3)
-                terminate = -1;
-        }
-        return true;
-    } catch (std::exception &e) {
+            frame.append(1, ch);
+        }while (delimiter != ch);
+    } catch (std::exception& e) {
         std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
         return false;
-    }*/
-    return false;
+    }
+    return true;
 }
 
 bool connectionHandler::sendFrameAscii(const std::string &frame, char delimiter) {
     std::vector<char> output = encode(frame);
-    int size = output.size();
-    char send[size];
-    for (int i = 0; i < size; ++i) {
+    output.shrink_to_fit();
+    char send[output.size()];
+    for (unsigned long i = 0; i < output.size(); ++i) {
         send[i] = output[i];
     }
-    return sendBytes(send, size);
+    return sendBytes(send, (int)output.size());
 }
 
 std::vector<char> connectionHandler::encode(std::string msg) {
@@ -222,9 +129,8 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         shortToBytes((short) 1, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
-        while (i < 3) {
-            iss >> word;
-            for (char & k : word) {
+        while (iss >> word) {
+            for (char &k: word) {
                 output.push_back(k);
             }
             if (i != 2)
@@ -235,10 +141,9 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         shortToBytes((short) 2, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
-        while (i < 3) {
-            iss >> word;
+        while (iss >> word) {
             if (i != 2) {
-                for (char & k : word) {
+                for (char &k: word) {
                     output.push_back(k);
                 }
                 output.push_back('\0');
@@ -264,7 +169,7 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         else
             output.push_back('\0');
         iss >> word;
-        for (char & j : word) {
+        for (char &j: word) {
             output.push_back(j);
         }
     } else if (word == "POST") {
@@ -272,44 +177,43 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
         while (iss >> word) {
-            for (char & j : word) {
+            output.push_back('\0');
+            for (char &j: word) {
                 output.push_back(j);
             }
-            output.push_back('\0');
         }
     } else if (word == "PM") {
         shortToBytes((short) 6, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
-        output.push_back('\0');
         while (iss >> word) {
-            for (char & j : word) {
+            output.push_back('\0');
+            for (char &j: word) {
                 output.push_back(j);
             }
-            output.push_back('\0');
         }
+        output.push_back('\0');
         auto t = std::time(nullptr);
         auto tm = *std::localtime(&t);
         std::ostringstream oss;
         oss << std::put_time(&tm, "%d-%m-%Y %H-%M");
         auto str = oss.str();
-        for (char &c: str){
-            if(c ==' ' || c=='-')
+        for (char &c: str) {
+            if (c == ' ' || c == '-')
                 output.push_back('\0');
             else
                 output.push_back(c);
         }
-    }
-    else if (word == "LOGSTAT") {
+    } else if (word == "LOGSTAT") {
         shortToBytes((short) 7, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
     } else if (word == "STAT") {
-        shortToBytes((short) 8 , opcode);
+        shortToBytes((short) 8, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
         while (getline(iss, word, ' ')) {
-            for (char & j : word) {
+            for (char &j: word) {
                 output.push_back(j);
             }
         }
@@ -317,7 +221,7 @@ std::vector<char> connectionHandler::encode(std::string msg) {
         shortToBytes((short) 12, opcode);
         output.push_back(opcode[0]);
         output.push_back(opcode[1]);
-       iss >> word;
+        iss >> word;
         for (int j = 0; j < (int) word.length(); ++j) {
             output.push_back(word[j]);
         }
@@ -341,103 +245,80 @@ std::string connectionHandler::translateMessage() {
     std::string frame;
     char ch;
     char opcodeBytes[2];
-    // Stop when we encounter the null character.
-    // Notice that the null character is not appended to the frame string.
-        getBytes(&opcodeBytes[0], 1);
-        getBytes(&opcodeBytes[1], 1);
-        short opcode = bytesToShort(opcodeBytes);
-        if (opcode == 9) {
+    getBytes(&opcodeBytes[0], 1);
+    getBytes(&opcodeBytes[1], 1);
+    short opcode = bytesToShort(opcodeBytes);
+    if (opcode == 9) {
+        std::string word;
+        frame.append("NOTIFICATION ");
+        getBytes(&ch, 1);
+        frame.append(ch == '0' ? "Public" : "Pm");
+        getFrameAscii(word , ';');
+        frame.append(word.substr(0,word.length()-1 ));
+    } else if (opcode == 10) {
+        frame.append("ACK ");
+        char messageOpcode[2];
+        getBytes(&messageOpcode[0], 1);
+        getBytes(&messageOpcode[1], 1);
+        short mOp = bytesToShort(messageOpcode);
+        frame.append(std::to_string(mOp));
+        if (mOp == 3) {
+            terminate = 1;
+        } else if (mOp == 4) {
             std::string word;
-            frame.append("NOTIFICATION ");
-            getBytes(&ch, 1);
-            if (ch == '0')
-                frame.append("Public");
+            char follow[2];
+            getBytes(&follow[0], 1);
+            getBytes(&follow[1], 1);
+            short f = bytesToShort(follow);
+            if (f == 0)
+                frame.append(" 0 ");
             else
-                frame.append("Pm");
-            while (true) {
-                getBytes(&ch, 1);
-                if (ch == ' ') {
-                    frame.append(word);
-                    word = "";
-                }
-                if (ch == ';') {
-                    frame.append(word);
-                    break;
-                }
-                word = word + ch;
-            }
-        } else if (opcode == 10) {
-            frame.append("ACK ");
-            char messageOpcode[2];
-
-            getBytes(&messageOpcode[0], 1);
-            getBytes(&messageOpcode[1], 1);
-            short mOp = bytesToShort(messageOpcode);
-            frame.append(std::to_string(mOp));
-            if (mOp == 3) {
-                terminate = 1;
-            } else if (mOp == 4) {
-                std::string word;
-                char follow[2];
-                char letter;
-                getBytes(&follow[0], 1);
-                getBytes(&follow[1], 1);
-                short f = bytesToShort(follow);
-                if (f == 0)
-                    frame.append(" 0 ");
-                else
-                    frame.append(" 1 ");
-                while (true) {
-                    getBytes(&letter, 1);
-                    if (letter == ';') {
-                        frame.append(word);
-                        break;
-                    }
-                    word = word + letter;
-                }
-            } else if (mOp == 7) {
-                char age[2];
-                getBytes(age, 2);
-                short a = bytesToShort(age);
-                frame.append(" " + std::to_string(a));
-                char NumPosts[2];
-                getBytes(NumPosts, 2);
-                short n = bytesToShort(NumPosts);
-                frame.append(" " + std::to_string(n));
-                char NumFollowers[2];
-                getBytes(NumFollowers, 2);
-                short f = bytesToShort(NumFollowers);
-                frame.append(" " + std::to_string(f));
-                char NumFollowing[2];
-                getBytes(NumFollowing, 2);
-                short l = bytesToShort(NumFollowing);
-                frame.append(" " + std::to_string(l));
-            } else if (mOp == 8) {
-                char age[2];
-                getBytes(age, 2);
-                short a = bytesToShort(age);
-                frame.append(" " + std::to_string(a));
-                char NumPosts[2];
-                getBytes(NumPosts, 2);
-                short n1 = bytesToShort(NumPosts);
-                frame.append(" " + std::to_string(n1));
-                char NumFollowers[2];
-                getBytes(NumFollowers, 2);
-                short f1 = bytesToShort(NumFollowers);
-                frame.append(" " + std::to_string(f1));
-                char NumFollowing[2];
-                getBytes(NumFollowing, 2);
-                short l1 = bytesToShort(NumFollowing);
-                frame.append(" " + std::to_string(l1));
-            }
-        } else if (opcode == 11) {
-            char error[2];
-            getBytes(error, 2);
-            short mistake = bytesToShort(error);
-            frame.append("ERROR " + std::to_string(mistake));
-            if (mistake == 3)
-                terminate = -1;
+                frame.append(" 1 ");
+            getFrameAscii(word , ';');
+            frame.append(word.substr(0,word.length()-1 ));
+        } else if (mOp == 7) {
+            char age[2];
+            getBytes(age, 2);
+            short a = bytesToShort(age);
+            frame.append(" " + std::to_string(a));
+            char NumPosts[2];
+            getBytes(NumPosts, 2);
+            short n = bytesToShort(NumPosts);
+            frame.append(" " + std::to_string(n));
+            char NumFollowers[2];
+            getBytes(NumFollowers, 2);
+            short f = bytesToShort(NumFollowers);
+            frame.append(" " + std::to_string(f));
+            char NumFollowing[2];
+            getBytes(NumFollowing, 2);
+            short l = bytesToShort(NumFollowing);
+            frame.append(" " + std::to_string(l));
+        } else if (mOp == 8) {
+            char age[2];
+            getBytes(age, 2);
+            short a = bytesToShort(age);
+            frame.append(" " + std::to_string(a));
+            char NumPosts[2];
+            getBytes(NumPosts, 2);
+            short n1 = bytesToShort(NumPosts);
+            frame.append(" " + std::to_string(n1));
+            char NumFollowers[2];
+            getBytes(NumFollowers, 2);
+            short f1 = bytesToShort(NumFollowers);
+            frame.append(" " + std::to_string(f1));
+            char NumFollowing[2];
+            getBytes(NumFollowing, 2);
+            short l1 = bytesToShort(NumFollowing);
+            frame.append(" " + std::to_string(l1));
         }
+    } else if (opcode == 11) {
+        char error[2];
+        getBytes(error, 2);
+        short mistake = bytesToShort(error);
+        frame.append("ERROR " + std::to_string(mistake));
+        if (mistake == 3)
+            terminate = -1;
+    }
     return frame;
 }
 

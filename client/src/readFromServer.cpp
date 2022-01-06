@@ -16,11 +16,16 @@ readFromServer::readFromServer(connectionHandler *connectionHandler1) : connecti
 void readFromServer::run() {
     while (1) {
         std::string answer = connectionHandler1->translateMessage();
-        std::cout << answer << std::endl;
-        if (answer == "ACK 3")
-            break;
+        if (!answer.empty()) {
+            std::cout << answer << std::endl;
+            if (answer == "ACK 3") {
+                connectionHandler1->close();
+                break;
+            }
+        }
     }
 }
+
 
 
 

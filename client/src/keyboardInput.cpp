@@ -19,7 +19,10 @@ void keyboardInput::run() {
             char buf[bufsize];
             std::cin.getline(buf, bufsize);
             std::string line(buf);
-            _connectionHandler->sendLine(line);
+            if(!_connectionHandler->sendLine(line)){
+                std::cout <<"Disconnected. Exit..\n"<<std::endl;
+                break;
+            }
             if (line == "LOGOUT") {
                 while (1) {
                     if (_connectionHandler->getTerminate() == 1)

@@ -1,0 +1,10 @@
+CLIENT
+
+Spl3 client
+
+Client part of client-server project from the course "System Programming" of Ben-Gurion university.
+The project was to build a "social network" ussing tp kinds of server architectures:
+1.Thread per client.
+2.reactor server.
+The server is written in Java and the client side in C++ using boost.
+you can find the server part here https://github.com/NivBouzaglo/server_spl3
